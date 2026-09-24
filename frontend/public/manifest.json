@@ -1,0 +1,16 @@
+{
+  "short_name": "Annadhara",
+  "name": "ANNADHARA AI - Intelligent Agricultural Procurement",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2c6026",
+  "background_color": "#f8fafc",
+  "description": "Smart India Hackathon 2026: Intelligent Procurement, Smart Slot Booking & Live Queue Tracking for Farmers."
+}

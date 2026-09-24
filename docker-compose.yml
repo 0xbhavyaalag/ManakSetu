@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: annadhara-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: annadhara
+      POSTGRES_PASSWORD: annadhara_secure_password
+      POSTGRES_DB: annadhara_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # RabbitMQ Message Broker for Async Notifications
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: annadhara-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  # FastAPI Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: annadhara-backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://annadhara:annadhara_secure_password@db:5432/annadhara_db
+      - SECRET_KEY=annadhara-sih2026-secret-jwt-key
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - rabbitmq
+
+  # React PWA Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: annadhara-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
