@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, MessageSquare, Bell, PhoneCall, Check, Clock } from 'lucide-react';
+import { X, MessageSquare, Bell, PhoneCall, Check, Clock, Volume2 } from 'lucide-react';
 import { NotificationItem } from '../types';
+import { speakIvrText } from '../services/audioService';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -99,24 +100,38 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                     </h3>
                   </div>
 
-                  {!item.is_read && (
+                  <div className="flex items-center gap-1.5">
                     <button
-                      onClick={() => onMarkRead(item.id)}
-                      className="text-xs text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5"
-                      title="Mark as read"
+                      onClick={() => speakIvrText(item.message, 'hi')}
+                      className="p-1 text-slate-400 hover:text-emerald-700 rounded transition"
+                      title="Listen to message in Hindi / English"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
                     </button>
-                  )}
+                    {!item.is_read && (
+                      <button
+                        onClick={() => onMarkRead(item.id)}
+                        className="text-xs text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5"
+                        title="Mark as read"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-600 mt-2 font-mono whitespace-pre-line leading-relaxed">
+                <p className="text-xs text-slate-600 mt-2 font-mono whitespace-pre-line leading-relaxed bg-white/70 p-2 rounded-lg border border-slate-100">
                   {item.message}
                 </p>
 
-                <div className="mt-2.5 flex items-center gap-1 text-[10px] text-slate-400">
-                  <Clock className="w-3 h-3" />
-                  <span>{new Date(item.created_at || Date.now()).toLocaleTimeString()}</span>
+                <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{new Date(item.created_at || Date.now()).toLocaleTimeString()}</span>
+                  </div>
+                  <span className="text-[9px] font-bold uppercase text-emerald-800 bg-emerald-100/60 px-1.5 py-0.2 rounded">
+                    Delivered
+                  </span>
                 </div>
               </div>
             ))

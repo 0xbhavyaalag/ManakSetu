@@ -1,10 +1,12 @@
 import React from 'react';
 import { 
   Wheat, Globe, Bell, PhoneCall, Smartphone, PlayCircle, 
-  UserCheck, Shield, ChevronDown 
+  UserCheck, Shield, ChevronDown, Sun, Moon, Eye
 } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { UserRole } from '../types';
+
+export type AppTheme = 'daylight' | 'eye-comfort' | 'dark';
 
 interface NavbarProps {
   currentRole: UserRole;
@@ -14,6 +16,9 @@ interface NavbarProps {
   onOpenKeypad: () => void;
   onOpenMissedCall: () => void;
   onOpenDemoTour: () => void;
+  theme: AppTheme;
+  onThemeChange: (theme: AppTheme) => void;
+  onSwitchToManak?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,12 +28,32 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenNotifications,
   onOpenKeypad,
   onOpenMissedCall,
-  onOpenDemoTour
+  onOpenDemoTour,
+  theme,
+  onThemeChange,
+  onSwitchToManak
 }) => {
   const { language, setLanguage, t } = useLanguage();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-xs">
+      {/* Top Govt of India & SIH 2026 Strip */}
+      <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-emerald-200 text-[11px] py-1 px-3 sm:px-6 border-b border-emerald-900/40">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-bold text-white tracking-wide">Government of India • Ministry of Agriculture & Farmers Welfare</span>
+            <span className="hidden md:inline text-emerald-300/80">• National Agricultural E-Procurement Portal</span>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] font-mono">
+            <span className="hidden sm:inline bg-emerald-900/90 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700/60 font-sans font-bold">
+              SIH 2026 Winner AI Platform
+            </span>
+            <span className="text-emerald-300">Helpline: <strong className="font-bold">1800-ANNADHARA</strong></span>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
@@ -60,6 +85,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Action Tools & Role Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Switch to MANAK-AI Button */}
+            {onSwitchToManak && (
+              <button
+                onClick={onSwitchToManak}
+                className="btn-press flex items-center gap-1.5 bg-gradient-to-r from-teal-700 to-emerald-700 text-white font-bold text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-lg shadow-sm hover:from-teal-800 hover:to-emerald-800 transition"
+                title="Switch to SIH 2026 Problem Statement 26108: MANAK-AI Portal"
+              >
+                <span className="w-2 h-2 rounded-full bg-teal-300 animate-pulse"></span>
+                <span>MANAK-AI (IS Recommender)</span>
+              </button>
+            )}
             
             {/* Run Demo Tour Button */}
             <button
@@ -112,6 +149,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 हिन्दी
+              </button>
+            </div>
+
+            {/* Eye Comfort & Lighting Switcher */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200" title="Eye Comfort Lighting Mode">
+              <button
+                onClick={() => onThemeChange('daylight')}
+                className={`p-1.5 rounded-md transition ${theme === 'daylight' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+                title="Daylight Crisp (दिन का उजाला)"
+              >
+                <Sun className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => onThemeChange('eye-comfort')}
+                className={`p-1.5 rounded-md transition flex items-center gap-1 ${theme === 'eye-comfort' ? 'bg-amber-100 text-amber-900 shadow-xs font-bold' : 'text-slate-500 hover:text-amber-800'}`}
+                title="Eye-Comfort Warm (आँखों के आराम हेतु वॉर्म मोड)"
+              >
+                <Eye className="w-3.5 h-3.5 text-amber-700" />
+                <span className="hidden xl:inline text-[10px]">Comfort</span>
+              </button>
+              <button
+                onClick={() => onThemeChange('dark')}
+                className={`p-1.5 rounded-md transition ${theme === 'dark' ? 'bg-slate-800 text-emerald-400 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+                title="Mandi Midnight Dark (रात्रि मोड)"
+              >
+                <Moon className="w-3.5 h-3.5" />
               </button>
             </div>
 

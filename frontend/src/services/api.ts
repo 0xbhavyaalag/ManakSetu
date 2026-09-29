@@ -122,5 +122,17 @@ export const api = {
   resetDemo: () =>
     request<any>('/demo/reset', { method: 'POST' }),
   executeDemoStep: (stepNumber: number) =>
-    request<any>(`/demo/step/${stepNumber}`, { method: 'POST' })
+    request<any>(`/demo/step/${stepNumber}`, { method: 'POST' }),
+
+  // SIH 2026 Problem Statement 26108: Standards Recommendation Engine
+  extractStandardsRequirements: (text: string, language: string = 'en', fileName?: string) =>
+    request<any>('/standards/extract', { method: 'POST', body: JSON.stringify({ text, language, fileName }) }),
+  recommendIndianStandards: (data: any) =>
+    request<any>('/standards/recommend', { method: 'POST', body: JSON.stringify(data) }),
+  getStandardsCatalog: (category?: string, qcoOnly: boolean = false) =>
+    request<any>(`/standards/catalog?${category ? `category=${encodeURIComponent(category)}&` : ''}qco_only=${qcoOnly}`),
+  submitStandardsFeedback: (isNumber: string, status: string, note?: string) =>
+    request<any>('/standards/feedback', { method: 'POST', body: JSON.stringify({ isNumber, status, note }) }),
+  generateTenderSpecificationClause: (tenderTitle: string, tenderRef: string, department: string, selectedIsNumbers: string[]) =>
+    request<any>('/standards/generate-clause', { method: 'POST', body: JSON.stringify({ tenderTitle, tenderRef, department, selectedIsNumbers }) })
 };

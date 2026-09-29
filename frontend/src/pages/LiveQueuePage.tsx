@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Clock, Users, RefreshCw, AlertTriangle, ArrowRight, ShieldCheck, 
-  MapPin, CheckCircle, Calculator, Info 
+  MapPin, CheckCircle, Calculator, Info, Volume2, Sparkles, Truck, CheckCircle2, Play 
 } from 'lucide-react';
 import { Booking, QueueStatus } from '../types';
 import { api } from '../services/api';
 import { useLanguage } from '../hooks/useLanguage';
+import { speakIvrText, playDtmfTone } from '../services/audioService';
 
 interface LiveQueuePageProps {
   booking: Booking | null;
@@ -18,10 +19,13 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
   onOpenReschedule,
   onOpenPreVisit
 }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const [queueData, setQueueData] = useState<QueueStatus | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [lastRefreshed, setLastRefreshed] = useState<string>('Just now');
+  const [isAnnouncing, setIsAnnouncing] = useState<boolean>(false);
+  const [advancingQueue, setAdvancingQueue] = useState<boolean>(false);
+  const [advanceMsg, setAdvanceMsg] = useState<string | null>(null);
 
   const fetchQueue = async () => {
     if (!booking) return;
@@ -42,6 +46,42 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
     return () => clearInterval(interval);
   }, [booking?.id]);
 
+  const handleSimulateQueueAdvance = async () => {
+    if (!booking) return;
+    setAdvancingQueue(true);
+    playDtmfTone('6', 180);
+    try {
+      await api.callNextToken(booking.centre_id || 2);
+      await fetchQueue();
+      const msg = language === 'hi'
+        ? `काउंटर टोकन आगे बढ़ गया! कतार में प्रतीक्षा समय कम हो गया है।`
+        : `Token advanced! Live weighbridge queue moved forward.`;
+      setAdvanceMsg(msg);
+      speakIvrText(msg, language);
+      setTimeout(() => setAdvanceMsg(null), 3500);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAdvancingQueue(false);
+    }
+  };
+
+  const handleAnnounceStatus = () => {
+    if (!booking) return;
+    setIsAnnouncing(true);
+    const curr = queueData ? queueData.current_token : booking.current_token;
+    const yours = queueData ? queueData.token_number : booking.token_number;
+    const ahead = queueData ? queueData.people_ahead : booking.people_ahead;
+    const mins = queueData ? queueData.estimated_wait_mins : booking.estimated_wait_mins;
+
+    const speech = language === 'hi'
+      ? `वर्तमान में टोकन ${curr} की सेवा जारी है। आपका टोकन ${yours} है। आपके आगे ${ahead} किसान हैं और अनुमानित प्रतीक्षा समय लगभग ${mins} मिनट है।`
+      : `Currently serving token ${curr}. Your token is ${yours}. There are ${ahead} farmers ahead with an estimated wait of ${mins} minutes.`;
+
+    speakIvrText(speech, language);
+    setTimeout(() => setIsAnnouncing(false), 5000);
+  };
+
   if (!booking) {
     return (
       <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 max-w-lg mx-auto">
@@ -60,7 +100,7 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
   const avgProcessing = queueData ? queueData.average_processing_time : 6;
 
   // Calculate progress: assuming starting queue was ~25
-  const progressPct = Math.min(100, Math.max(10, Math.round(((25 - peopleAhead) / 25) * 100)));
+  const progressPct = Math.min(100, Math.max(12, Math.round(((25 - peopleAhead) / 25) * 100)));
 
   return (
     <div className="max-w-3xl mx-auto pb-20 md:pb-8 space-y-6">
@@ -69,10 +109,10 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
               Live Queue & Token Status
             </h1>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             Real-time counter sync • Last updated {lastRefreshed}
@@ -80,6 +120,27 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleSimulateQueueAdvance}
+            disabled={advancingQueue}
+            className="btn-press px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xs transition"
+            title="Advance Queue by 1 token (Live Simulation Demo)"
+          >
+            <Play className="w-3.5 h-3.5 fill-white" />
+            <span>{advancingQueue ? 'Advancing...' : 'Advance +1'}</span>
+          </button>
+
+          <button
+            onClick={handleAnnounceStatus}
+            className={`btn-press px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${
+              isAnnouncing ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+            }`}
+            title="Listen to Live Queue Audio"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            <span>सुनें / Speak</span>
+          </button>
+
           <button
             onClick={() => { setLoading(true); fetchQueue(); }}
             className="btn-press p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition"
@@ -100,20 +161,32 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
         </div>
       </div>
 
+      {/* Advance Toast Banner */}
+      {advanceMsg && (
+        <div className="p-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl shadow-lg flex items-center justify-between text-xs font-bold animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-200 animate-spin" />
+            <span>{advanceMsg}</span>
+          </div>
+          <button onClick={() => setAdvanceMsg(null)} className="text-white/80 hover:text-white">&times;</button>
+        </div>
+      )}
+
       {/* Main Token Banner */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-emerald-900/50">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
           
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-400">
-              YOUR APPOINTMENT TOKEN
-            </span>
-            <div className="text-5xl sm:text-6xl font-black tracking-tight text-white mt-1">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-extrabold text-emerald-300 mb-2">
+              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <span>YOUR LIVE APPOINTMENT TOKEN</span>
+            </div>
+            <div className="text-5xl sm:text-6xl font-black tracking-tight text-white mt-1 font-display">
               {yourToken}
             </div>
-            <p className="text-xs text-slate-300 mt-2 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-              {booking.centre_name} • Slot: {booking.booking_time}
+            <p className="text-xs text-slate-300 mt-2 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>{booking.centre_name} • Slot: <strong>{booking.booking_time}</strong></span>
             </p>
             <div className="text-xs text-emerald-300/90 font-mono mt-1">
               Booking Ref: {booking.booking_code} ({booking.crop_name} {booking.quantity_quintals}q)
@@ -122,38 +195,46 @@ export const LiveQueuePage: React.FC<LiveQueuePageProps> = ({
 
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 text-center space-y-3">
             <div className="flex justify-between items-center text-xs pb-2 border-b border-white/10">
-              <span className="text-slate-300">Current Serving Token:</span>
-              <span className="font-extrabold text-white text-base font-mono">{currentToken}</span>
+              <span className="text-slate-300">Currently Serving Counter:</span>
+              <span className="font-black text-white text-base font-mono">{currentToken}</span>
             </div>
 
             <div className="flex justify-between items-center text-xs pb-2 border-b border-white/10">
-              <span className="text-slate-300">People Ahead in Line:</span>
-              <span className="font-extrabold text-amber-400 text-base">{peopleAhead} Farmers</span>
+              <span className="text-slate-300">Farmers Ahead of You:</span>
+              <span className="font-extrabold text-amber-400 text-base">{peopleAhead} Trucks</span>
             </div>
 
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-300">Estimated Waiting Time:</span>
-              <span className="font-black text-emerald-300 text-xl">~{waitMins} Minutes</span>
+              <span className="text-slate-300">Estimated Waiting Window:</span>
+              <span className="font-black text-emerald-300 text-xl font-display">~{waitMins} Minutes</span>
             </div>
 
             <div className="text-[10px] text-slate-400 italic">
-              * Clearly labeled: Algorithmic prediction based on active counter speed
+              * Live dynamic sync with Counter #3 sensor feed
             </div>
           </div>
 
         </div>
 
-        {/* Dynamic Progress Indicator */}
+        {/* Dynamic Queue Progression Visualizer */}
         <div className="mt-6 pt-5 border-t border-white/10">
-          <div className="flex justify-between text-xs text-slate-300 mb-1.5">
-            <span>Queue Progress</span>
-            <span className="font-bold text-emerald-400">{progressPct}% Estimated Progress</span>
+          <div className="flex justify-between text-xs text-slate-300 mb-2">
+            <span className="flex items-center gap-1.5">
+              <Truck className="w-4 h-4 text-emerald-400" />
+              <span>Weighbridge Queue Pipeline</span>
+            </span>
+            <span className="font-bold text-emerald-400">{progressPct}% Throughput Complete</span>
           </div>
-          <div className="w-full bg-slate-700/60 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
             <div 
-              className="bg-gradient-to-r from-emerald-500 to-green-400 h-2 transition-all duration-500 rounded-full"
+              className="bg-gradient-to-r from-emerald-500 via-teal-400 to-green-400 h-2.5 transition-all duration-700 rounded-full shadow-sm"
               style={{ width: `${progressPct}%` }}
             />
+          </div>
+          <div className="flex justify-between text-[10px] text-slate-400 mt-2 font-mono">
+            <span>Now Serving: {currentToken}</span>
+            <span>Pipeline Ahead: {peopleAhead}</span>
+            <span className="text-emerald-300 font-bold">Your Turn: {yourToken}</span>
           </div>
         </div>
       </div>

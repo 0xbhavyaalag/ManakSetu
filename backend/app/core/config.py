@@ -10,7 +10,9 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
     
     # SQLite default for instant zero-dependency local runs, switchable to PostgreSQL via env
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./annadhara.db")
+    _root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    _default_db_path = os.path.join(_root_dir, "annadhara.db").replace("\\", "/")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{_default_db_path}")
     
     CROWD_QUEUE_THRESHOLD: int = 80
     DEFAULT_AVG_PROCESSING_MINS: int = 6

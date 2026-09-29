@@ -149,50 +149,80 @@ export const KeypadSimulatorModal: React.FC<KeypadSimulatorModalProps> = ({
           </div>
         </div>
 
+        {/* Speaker Grille */}
+        <div className="flex justify-center items-center gap-1.5 mb-2.5">
+          <div className="w-8 h-1 rounded-full bg-slate-950/80 border border-slate-700/50"></div>
+          <div className="w-2 h-2 rounded-full bg-slate-950/80 border border-slate-700/50"></div>
+        </div>
+
         {/* Phone Brand Emblem with Official Logo */}
-        <div className="flex items-center justify-center gap-2 mb-2 bg-slate-950/60 py-1.5 px-3 rounded-lg border border-slate-700/50">
-          <img 
-            src="/logo-icon.png" 
-            alt="ANNADHARA" 
-            className="h-6 w-6 object-contain"
-          />
-          <span className="text-xs font-black tracking-widest text-emerald-400 font-mono">
-            ANNADHARA AI
+        <div className="flex items-center justify-between gap-2 mb-2 bg-slate-950/70 py-1.5 px-3 rounded-xl border border-slate-700/50">
+          <div className="flex items-center gap-1.5">
+            <img 
+              src="/logo-icon.png" 
+              alt="ANNADHARA" 
+              className="h-5 w-5 object-contain"
+            />
+            <span className="text-[11px] font-black tracking-widest text-emerald-400 font-mono">
+              ANNADHARA BHARAT
+            </span>
+          </div>
+          <span className="text-[9px] font-mono text-emerald-300/80 font-bold bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">
+            IVR 1800-FARM
           </span>
         </div>
 
         {/* Retro Backlit LCD Display */}
-        <div className="phone-lcd rounded-xl p-3 min-h-[110px] flex flex-col justify-between border-2 border-slate-950/40 shadow-inner mb-4">
-          <div className="flex justify-between items-center text-[10px] border-b border-slate-800/20 pb-1">
-            <span className="font-bold">📶 BSNL 2G | SIM 1</span>
-            <span>{isCallActive ? '📞 00:24 IN CALL' : 'STANDBY'}</span>
+        <div className="phone-lcd rounded-2xl p-3 min-h-[115px] flex flex-col justify-between border-2 border-slate-950/60 shadow-inner mb-3 relative overflow-hidden">
+          {/* Subtle Scanlines overlay */}
+          <div className="flex justify-between items-center text-[10px] border-b border-slate-800/20 pb-1 font-bold">
+            <span className="flex items-center gap-1">
+              <span>📶 5/5 BSNL</span>
+              <span>•</span>
+              <span>Kisan Helpline</span>
+            </span>
+            <span className="font-mono">
+              {isCallActive ? '🔴 00:24 IN CALL' : 'STANDBY'}
+            </span>
           </div>
-          <div className="text-xs font-mono font-bold whitespace-pre-line my-1.5 leading-snug">
+
+          <div className="text-xs font-mono font-bold whitespace-pre-line my-2 leading-relaxed">
             {screenText}
           </div>
-          <div className="text-[10px] text-right font-semibold text-slate-900/80">
-            {isCallActive ? '*: Menu  #: End' : 'Dial * for info'}
+
+          <div className="flex justify-between items-center text-[9px] font-semibold text-slate-900/80 pt-1 border-t border-slate-800/20">
+            <div className="flex items-center gap-1">
+              {isCallActive && (
+                <div className="flex items-center gap-0.5 h-2.5">
+                  <span className="w-0.5 bg-slate-900 rounded-full wave-bar-1"></span>
+                  <span className="w-0.5 bg-slate-900 rounded-full wave-bar-2"></span>
+                  <span className="w-0.5 bg-slate-900 rounded-full wave-bar-3"></span>
+                </div>
+              )}
+              <span>{isCallActive ? 'Audio Stream Active' : 'Press CALL to Connect'}</span>
+            </div>
+            <span>{isCallActive ? '*: Menu  #: End' : 'Dial * for info'}</span>
           </div>
         </div>
 
         {/* Live Audio Prompter / Subtitles */}
         {isCallActive && spokenAudioText && (
-          <div className="mb-3 p-2 bg-slate-800/80 rounded-lg border border-emerald-500/30 text-[11px] text-emerald-300 flex items-start gap-1.5">
+          <div className="mb-3 p-2.5 bg-slate-950/80 rounded-xl border border-emerald-500/40 text-[11px] text-emerald-300 flex items-start gap-2 shadow-inner">
             <Volume2 className="w-4 h-4 shrink-0 mt-0.5 animate-pulse text-emerald-400" />
-            <p className="line-clamp-2 italic">{spokenAudioText}</p>
+            <p className="line-clamp-2 italic leading-relaxed">{spokenAudioText}</p>
           </div>
         )}
 
         {/* Call Action Buttons */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-2.5 mb-3">
           <button
             id="ivr-call-btn"
             onClick={handleStartCall}
             disabled={isCallActive || loading}
-            className={`btn-press py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md ${
+            className={`btn-press py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg transition ${
               isCallActive
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/30'
+                ? 'bg-slate-700/60 text-slate-500 cursor-not-allowed border border-slate-600'
+                : 'bg-gradient-to-b from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 text-white shadow-emerald-950/50 border border-emerald-400/50'
             }`}
           >
             <Phone className="w-4 h-4" />
@@ -203,10 +233,10 @@ export const KeypadSimulatorModal: React.FC<KeypadSimulatorModalProps> = ({
             id="ivr-end-btn"
             onClick={handleEndCall}
             disabled={!isCallActive}
-            className={`btn-press py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-md ${
+            className={`btn-press py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg transition ${
               !isCallActive
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/30'
+                ? 'bg-slate-700/60 text-slate-500 cursor-not-allowed border border-slate-600'
+                : 'bg-gradient-to-b from-rose-500 to-rose-700 hover:from-rose-400 hover:to-rose-600 text-white shadow-rose-950/50 border border-rose-400/50'
             }`}
           >
             <PhoneOff className="w-4 h-4" />
@@ -214,19 +244,26 @@ export const KeypadSimulatorModal: React.FC<KeypadSimulatorModalProps> = ({
           </button>
         </div>
 
-        {/* DTMF Keypad Grid */}
-        <div className="grid grid-cols-3 gap-2.5 px-1">
+        {/* Keypad Guide Chips */}
+        <div className="grid grid-cols-3 gap-1.5 mb-2.5 text-[9px] font-semibold text-slate-400 text-center font-mono">
+          <span className="bg-slate-950/40 p-1 rounded-md border border-slate-800">1: Book Slot</span>
+          <span className="bg-slate-950/40 p-1 rounded-md border border-slate-800">2: Token Info</span>
+          <span className="bg-slate-950/40 p-1 rounded-md border border-slate-800">3: Reschedule</span>
+        </div>
+
+        {/* DTMF Keypad Grid with tactile styling */}
+        <div className="grid grid-cols-3 gap-2 px-0.5">
           {keypadKeys.map((k) => (
             <button
               key={k.num}
               id={`keypad-${k.num}`}
               onClick={() => handleKeyPress(k.num)}
-              className="btn-press bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 active:scale-95 border border-slate-600 rounded-xl py-2.5 flex flex-col items-center justify-center shadow-md shadow-slate-950/40 transition"
+              className="btn-press bg-gradient-to-b from-slate-700 via-slate-750 to-slate-800 hover:from-slate-600 hover:to-slate-700 active:scale-95 border-b-2 border-slate-950 border-t border-slate-600 rounded-2xl py-2.5 flex flex-col items-center justify-center shadow-lg shadow-slate-950/60 transition group"
             >
-              <span className="text-lg font-extrabold text-white leading-none">
+              <span className="text-lg font-black text-white group-hover:text-emerald-300 leading-none">
                 {k.num}
               </span>
-              <span className="text-[9px] font-medium text-slate-400 tracking-wider">
+              <span className="text-[9px] font-bold text-slate-400 tracking-wider">
                 {k.sub}
               </span>
             </button>
@@ -235,7 +272,7 @@ export const KeypadSimulatorModal: React.FC<KeypadSimulatorModalProps> = ({
 
         {/* Dispatched SMS toast preview */}
         {lastSms && (
-          <div className="mt-3 p-2 bg-amber-500/20 border border-amber-500/40 rounded-xl text-[11px] text-amber-200 flex items-start gap-1.5">
+          <div className="mt-3 p-2.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50 rounded-2xl text-[11px] text-amber-200 flex items-start gap-2 shadow-inner">
             <MessageSquare className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
             <div>
               <span className="font-bold text-amber-300">Incoming SIM SMS: </span>
@@ -248,3 +285,4 @@ export const KeypadSimulatorModal: React.FC<KeypadSimulatorModalProps> = ({
     </div>
   );
 };
+

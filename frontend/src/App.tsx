@@ -17,14 +17,25 @@ import { ProcurementStatusPage } from './pages/ProcurementStatusPage';
 import { PaymentStatusPage } from './pages/PaymentStatusPage';
 import { CentreOperatorPage } from './pages/CentreOperatorPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { StandardsProcurementApp } from './pages/standards/StandardsProcurementApp';
 
 import { api } from './services/api';
 import { UserRole, Booking, CentreRecommendation, Family, NotificationItem } from './types';
 import { LanguageProvider } from './hooks/useLanguage';
+import { AppTheme } from './components/Navbar';
 
 export const MainAppContent: React.FC = () => {
+  const [activePortal, setActivePortal] = useState<'manak' | 'agro'>('manak');
   const [currentRole, setCurrentRole] = useState<UserRole>('farmer');
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [theme, setTheme] = useState<AppTheme>(() => {
+    return (localStorage.getItem('annadhara_theme') as AppTheme) || 'daylight';
+  });
+
+  const handleThemeChange = (newTheme: AppTheme) => {
+    setTheme(newTheme);
+    localStorage.setItem('annadhara_theme', newTheme);
+  };
 
   // Core Data State
   const [booking, setBooking] = useState<Booking | null>(null);
@@ -92,8 +103,30 @@ export const MainAppContent: React.FC = () => {
     loadInitialData();
   };
 
+  // If in MANAK-AI portal mode (Primary SIH 2026 Problem Statement 26108)
+  if (activePortal === 'manak') {
+    return (
+      <StandardsProcurementApp
+        onSwitchToAgro={() => setActivePortal('agro')}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className={`min-h-screen theme-${theme} flex flex-col font-sans relative overflow-x-hidden selection:bg-emerald-200 selection:text-emerald-900 transition-colors duration-300 ${
+      theme === 'dark' 
+        ? 'bg-[#0a0f18] text-slate-100' 
+        : theme === 'eye-comfort' 
+        ? 'bg-[#f4efe4] text-[#2d261e]' 
+        : 'bg-[#f8faf9] text-slate-800'
+    }`}>
+      {/* Decorative ambient background mesh glow */}
+      <div className={`absolute top-0 right-0 w-[550px] h-[550px] rounded-full blur-3xl pointer-events-none -z-0 ${
+        theme === 'dark' ? 'bg-gradient-to-bl from-emerald-600/10 to-teal-500/5' : 'bg-gradient-to-bl from-emerald-200/35 to-teal-300/15'
+      }`} />
+      <div className={`absolute top-[38%] -left-20 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none -z-0 ${
+        theme === 'dark' ? 'bg-gradient-to-tr from-amber-600/10 to-emerald-600/5' : 'bg-gradient-to-tr from-amber-200/25 to-emerald-200/20'
+      }`} />
       
       {/* Global Navbar */}
       <Navbar
@@ -104,6 +137,9 @@ export const MainAppContent: React.FC = () => {
         onOpenKeypad={() => setIsKeypadOpen(true)}
         onOpenMissedCall={() => setIsMissedCallOpen(true)}
         onOpenDemoTour={() => setIsDemoTourOpen(true)}
+        theme={theme}
+        onThemeChange={handleThemeChange}
+        onSwitchToManak={() => setActivePortal('manak')}
       />
 
       {/* Main Content Viewport */}
@@ -127,6 +163,7 @@ export const MainAppContent: React.FC = () => {
                 onNavigate={setActiveTab}
                 onOpenReschedule={() => setIsRescheduleOpen(true)}
                 onOpenPreVisit={() => setIsPreVisitOpen(true)}
+                onAdvanceQueue={loadInitialData}
               />
             )}
 

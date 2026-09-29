@@ -6,7 +6,7 @@ from .services.seed_data import init_seed_data
 from .api import (
     auth, centres, bookings, queue, family,
     procurement, payments, notifications, ai,
-    ivr, admin, demo
+    ivr, admin, demo, standards
 )
 
 # Auto-create tables
@@ -47,6 +47,7 @@ app.include_router(ai.router, prefix=settings.API_V1_STR)
 app.include_router(ivr.router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(demo.router, prefix=settings.API_V1_STR)
+app.include_router(standards.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():
